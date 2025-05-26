@@ -60,7 +60,119 @@
 						"type": "address"
 					}
 				],
+				"name": "AdminDeposited",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "creator",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "address[]",
+						"name": "acceptedTokens",
+						"type": "address[]"
+					}
+				],
+				"name": "BubbleCreated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "rewardRecipient",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "address[]",
+						"name": "tokens",
+						"type": "address[]"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256[]",
+						"name": "amounts",
+						"type": "uint256[]"
+					}
+				],
+				"name": "CreatorRewardsSent",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
 				"name": "Deposited",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "triggeredBy",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "refundAmount",
+						"type": "uint256"
+					}
+				],
+				"name": "ManualPop",
 				"type": "event"
 			},
 			{
@@ -99,19 +211,84 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "uint256",
-						"name": "amount",
-						"type": "uint256"
+						"internalType": "address[]",
+						"name": "tokens",
+						"type": "address[]"
 					},
 					{
 						"indexed": false,
-						"internalType": "address",
-						"name": "token",
-						"type": "address"
+						"internalType": "uint256[]",
+						"name": "amounts",
+						"type": "uint256[]"
 					}
 				],
 				"name": "Popped",
 				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "acceptedTokensMap",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "contract IERC20",
+						"name": "token",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "adminDeposit",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "contract IERC20",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "adminRemoveAcceptedToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
 			},
 			{
 				"inputs": [
@@ -144,9 +321,9 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "uint256",
-						"name": "depositPrice",
-						"type": "uint256"
+						"internalType": "contract IERC20",
+						"name": "initialDepositToken",
+						"type": "address"
 					},
 					{
 						"internalType": "uint256",
@@ -180,9 +357,9 @@
 						"type": "address[]"
 					},
 					{
-						"internalType": "uint256",
-						"name": "_depositPrice",
-						"type": "uint256"
+						"internalType": "uint256[]",
+						"name": "_depositPrices",
+						"type": "uint256[]"
 					}
 				],
 				"name": "createBubble",
@@ -209,6 +386,30 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "depositPrices",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "developerAddress",
 				"outputs": [
@@ -216,6 +417,82 @@
 						"internalType": "address",
 						"name": "",
 						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"name": "existingBubbles",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					}
+				],
+				"name": "getAcceptedTokens",
+				"outputs": [
+					{
+						"internalType": "address[]",
+						"name": "",
+						"type": "address[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					}
+				],
+				"name": "getDepositPrices",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "bubbleId",
+						"type": "uint256"
+					}
+				],
+				"name": "getPopPool",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "",
+						"type": "uint256[]"
 					}
 				],
 				"stateMutability": "view",
@@ -274,10 +551,73 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					},
+					{
+						"internalType": "contract IERC20",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "popPools",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "promoNftCollection",
+				"outputs": [
+					{
+						"internalType": "contract IERC721",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "renounceOwnership",
 				"outputs": [],
 				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "requiredNFTCount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "requiredPromotNFTCount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -289,6 +629,32 @@
 					}
 				],
 				"name": "setDeveloperWallet",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_newNftAddress",
+						"type": "address"
+					}
+				],
+				"name": "setRequireNFTCollection",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_count",
+						"type": "uint256"
+					}
+				],
+				"name": "setRequiredNFTCount",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -387,7 +753,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/Bubble.sol": "BubbleGame"
+			"contracts/Bubble.sol": "DegenBubble"
 		},
 		"evmVersion": "cancun",
 		"libraries": {},
@@ -442,11 +808,11 @@
 			]
 		},
 		"contracts/Bubble.sol": {
-			"keccak256": "0x9164e0bb1f8a72d03f46f998a8e233b8c80c8e5c5025721b1b63e30d610c5bff",
+			"keccak256": "0x63d967604f3d098d1a637acf5c9cdbd8f3f08e74a1c9f1eab02465864f8b3637",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://4333529185e222694cbb4b27ba1b2e6541413dd00b5309114e2ab31eb72c9c81",
-				"dweb:/ipfs/QmafNHuGffhVqVAEyUrRzfLwJwm4LdahS5vTGxidwNt23F"
+				"bzz-raw://86eacbb6705f235bdd2f9d7ee7efb996a8a6831525214779f12def6174dd4507",
+				"dweb:/ipfs/QmRqkhDgdBdJ7pvRcY9fTFL95aKirDL2qsMy3V8TuyHEaH"
 			]
 		}
 	},
