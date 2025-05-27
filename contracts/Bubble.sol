@@ -164,7 +164,7 @@ contract DegenBubble is Ownable {
         emit Deposited(bubbleId, msg.sender, ticketPrice, address(token));
     }
 
-    // function shouldPop(Bubble storage bubble) internal view returns (bool) {
+    // function oldshouldPop(Bubble storage bubble) internal view returns (bool) {
     //     uint256 adjustedPopProbability = bubble.popProbability - (bubble.popProbability * bubble.depositCount / 1000000);
     //     if (adjustedPopProbability <= 2000000) {
     //         adjustedPopProbability = 2000000;

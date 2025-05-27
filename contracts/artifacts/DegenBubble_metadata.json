@@ -782,11 +782,11 @@
 			]
 		},
 		"contracts/Bubble.sol": {
-			"keccak256": "0x34568f0f939fdf9b3be51a88e0108011bf7919021ac2bef076df20f87985356f",
+			"keccak256": "0x26b945ad7c0f87684f825df50e7b4c9049465007c131fac1be498f2a09fd2954",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://9ce471e8a70d40d46cef216b0763772bee6c3c0922b1c50559790acdb0938b8f",
-				"dweb:/ipfs/QmXkhhCK1ztytDw4FdtJBoWa1o6QCSaVDfmmA8pY8HS3KP"
+				"bzz-raw://2fe373cedca24b15f6f0f5b77537c1705ccd3fef90fb387b5eb4629176310bc9",
+				"dweb:/ipfs/QmSF3ApgkLiA1wd5nuz8zXCHXM2kVcoDqh1nrFJEvRtkiP"
 			]
 		}
 	},
