@@ -54,7 +54,7 @@ contract DegenBubble is Ownable {
     ) external {
         require(_tokens.length == _depositPrices.length, "Mismatched inputs");
         require(_tokens.length > 0 && _tokens.length <= 5, "Must accept 1-5 tokens");
-        require(_popProbability <= 2500, "Probability out of range"); // ---> 1/25 min
+        require(_popProbability >= 5 && _popProbability <= 1_000_000, "Probability out of range");
         require(_burnPercentage <= 10000, "Burn percentage out of range");
         require(nftCollection.balanceOf(msg.sender) >= requiredNFTCount, "You do not own enough NFTs to create a Bubble");
         require(bubbles.length < maxBubbles || reusableIndexes.length > 0, "Bubble limit reached");
@@ -164,13 +164,31 @@ contract DegenBubble is Ownable {
         emit Deposited(bubbleId, msg.sender, ticketPrice, address(token));
     }
 
+    // function shouldPop(Bubble storage bubble) internal view returns (bool) {
+    //     uint256 adjustedPopProbability = bubble.popProbability - (bubble.popProbability * bubble.depositCount / 1000000);
+    //     if (adjustedPopProbability <= 2000000) {
+    //         adjustedPopProbability = 2000000;
+    //     }
+    //     return (uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % 10000000) < adjustedPopProbability;
+    // }
+
     function shouldPop(Bubble storage bubble) internal view returns (bool) {
-        uint256 adjustedPopProbability = bubble.popProbability - (bubble.popProbability * bubble.depositCount / 1000000);
-        if (adjustedPopProbability <= 2000000) {
-            adjustedPopProbability = 2000000;
-        }
-        return (uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % 10000000) < adjustedPopProbability;
-    }
+        uint256 base = 10_000_000; // 100%
+        uint256 minChance = base / bubble.popProbability; // e.g., 10% = 1_000_000
+        uint256 maxChance = 2_000_000; // 20%
+
+        // Increase by 0.1% (10,000 units) per deposit
+        uint256 adjustedChance = minChance + (bubble.depositCount * 10_000);
+        // Cap at 20%
+        if (adjustedChance > maxChance) adjustedChance = maxChance;
+
+        // Generate pseudo-random value and compare to chance
+        uint256 rand = uint256(
+            keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))
+        ) % base;
+
+    return rand < adjustedChance;
+}
 
     function triggerPop(uint256 bubbleId, address user) internal {
         Bubble storage bubble = bubbles[bubbleId];

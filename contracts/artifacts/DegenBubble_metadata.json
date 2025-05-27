@@ -576,19 +576,6 @@
 			},
 			{
 				"inputs": [],
-				"name": "promoNftCollection",
-				"outputs": [
-					{
-						"internalType": "contract IERC721",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
 				"name": "renounceOwnership",
 				"outputs": [],
 				"stateMutability": "nonpayable",
@@ -597,19 +584,6 @@
 			{
 				"inputs": [],
 				"name": "requiredNFTCount",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "requiredPromotNFTCount",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -808,11 +782,11 @@
 			]
 		},
 		"contracts/Bubble.sol": {
-			"keccak256": "0x63d967604f3d098d1a637acf5c9cdbd8f3f08e74a1c9f1eab02465864f8b3637",
+			"keccak256": "0x34568f0f939fdf9b3be51a88e0108011bf7919021ac2bef076df20f87985356f",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://86eacbb6705f235bdd2f9d7ee7efb996a8a6831525214779f12def6174dd4507",
-				"dweb:/ipfs/QmRqkhDgdBdJ7pvRcY9fTFL95aKirDL2qsMy3V8TuyHEaH"
+				"bzz-raw://9ce471e8a70d40d46cef216b0763772bee6c3c0922b1c50559790acdb0938b8f",
+				"dweb:/ipfs/QmXkhhCK1ztytDw4FdtJBoWa1o6QCSaVDfmmA8pY8HS3KP"
 			]
 		}
 	},
