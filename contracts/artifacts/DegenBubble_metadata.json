@@ -513,6 +513,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "manualPopCooldown",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "maxBubbles",
 				"outputs": [
 					{
@@ -603,6 +616,19 @@
 					}
 				],
 				"name": "setDeveloperWallet",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_seconds",
+						"type": "uint256"
+					}
+				],
+				"name": "setManualPopCooldown",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -782,11 +808,11 @@
 			]
 		},
 		"contracts/Bubble.sol": {
-			"keccak256": "0x26b945ad7c0f87684f825df50e7b4c9049465007c131fac1be498f2a09fd2954",
+			"keccak256": "0xf9dce0cf77b9d496e23510e455e8754da182d770590e8da04bf2c7b80007126a",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://2fe373cedca24b15f6f0f5b77537c1705ccd3fef90fb387b5eb4629176310bc9",
-				"dweb:/ipfs/QmSF3ApgkLiA1wd5nuz8zXCHXM2kVcoDqh1nrFJEvRtkiP"
+				"bzz-raw://1a0da3b99d5d93b5bd20225c8247ab29beeb5b64e308263a4e8cbae700be96e2",
+				"dweb:/ipfs/Qmaq9W5YdrgKK6TwMq5EatjYeceESsgVWdgKNfcDZ4yet5"
 			]
 		}
 	},

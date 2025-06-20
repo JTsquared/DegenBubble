@@ -26,6 +26,7 @@ contract DegenBubble is Ownable {
     mapping(address => uint256) public userBubbleCount;
     mapping(bytes32 => bool) public existingBubbles;
     uint256 public requiredNFTCount = 5;
+    uint256 public manualPopCooldown = 7 days;
     
     mapping(uint256 => mapping(address => bool)) public acceptedTokensMap; // (bubbleId => token => bool)
     mapping(uint256 => mapping(IERC20 => uint256)) public popPools; // (bubbleId => token => amount)
@@ -47,10 +48,10 @@ contract DegenBubble is Ownable {
     }
 
     function createBubble(
-        uint256 _popProbability,
-        uint256 _burnPercentage,
-        IERC20[] memory _tokens,
-        uint256[] memory _depositPrices
+    uint256 _popProbability,
+    uint256 _burnPercentage,
+    IERC20[] memory _tokens,
+    uint256[] memory _depositPrices
     ) external {
         require(_tokens.length == _depositPrices.length, "Mismatched inputs");
         require(_tokens.length > 0 && _tokens.length <= 5, "Must accept 1-5 tokens");
@@ -58,10 +59,15 @@ contract DegenBubble is Ownable {
         require(_burnPercentage <= 10000, "Burn percentage out of range");
         require(nftCollection.balanceOf(msg.sender) >= requiredNFTCount, "You do not own enough NFTs to create a Bubble");
         require(bubbles.length < maxBubbles || reusableIndexes.length > 0, "Bubble limit reached");
+
         bytes32 bubbleHash = getBubbleHash(_tokens, _popProbability);
         require(!existingBubbles[bubbleHash], "Similar bubble already exists");
         existingBubbles[bubbleHash] = true;
-        require(userBubbleCount[msg.sender] < nftCollection.balanceOf(msg.sender) / requiredNFTCount, "Bubble creation limit reached");
+
+        require(
+            userBubbleCount[msg.sender] < nftCollection.balanceOf(msg.sender) / requiredNFTCount,
+            "Bubble creation limit reached"
+        );
 
         uint256 bubbleId;
         if (reusableIndexes.length > 0) {
@@ -72,11 +78,12 @@ contract DegenBubble is Ownable {
             bubbles.push();
         }
 
-        // Reset state for reused bubbleId
+        // ✅ CHANGED: Move hash calculation BEFORE mutation begins
         Bubble storage reusedBubble = bubbles[bubbleId];
+        bytes32 oldHash = getBubbleHash(reusedBubble.acceptedTokens, reusedBubble.popProbability);
+        existingBubbles[oldHash] = false;
+
         for (uint256 i = 0; i < reusedBubble.acceptedTokens.length; i++) {
-            bytes32 oldHash = getBubbleHash(reusedBubble.acceptedTokens, reusedBubble.popProbability);
-            existingBubbles[oldHash] = false;
             address tokenAddress = address(reusedBubble.acceptedTokens[i]);
             acceptedTokensMap[bubbleId][tokenAddress] = false;
             popPools[bubbleId][reusedBubble.acceptedTokens[i]] = 0;
@@ -101,6 +108,7 @@ contract DegenBubble is Ownable {
         for (uint256 i = 0; i < _tokens.length; i++) {
             require(_depositPrices[i] > 0, "Deposit price must be greater than 0");
             require(!acceptedTokensMap[bubbleId][address(_tokens[i])], "Duplicate token");
+
             acceptedTokensMap[bubbleId][address(_tokens[i])] = true;
             depositPrices[bubbleId][address(_tokens[i])] = _depositPrices[i];
             tokenAddresses[i] = address(_tokens[i]);
@@ -108,11 +116,12 @@ contract DegenBubble is Ownable {
 
         uint256 initialDeposit = (_popProbability * 2500 * _depositPrices[0]) / 10000;
         IERC20 depositToken = _tokens[0];
+        require(depositToken.balanceOf(msg.sender) >= initialDeposit, "Insufficient balance for initial deposit");
         require(depositToken.transferFrom(msg.sender, address(this), initialDeposit), "Initial deposit failed");
         popPools[bubbleId][depositToken] += initialDeposit;
-        
+
         userBubbleCount[msg.sender]++;
-        
+
         emit BubbleCreated(bubbleId, msg.sender, tokenAddresses);
     }
 
@@ -147,6 +156,7 @@ contract DegenBubble is Ownable {
         require(bubble.isActive, "Bubble has popped!");
         require(isAcceptedToken(bubbleId, token), "Token not accepted");
         require(token.allowance(msg.sender, address(this)) >= ticketPrice, "Insufficient allowance");
+        require(token.balanceOf(msg.sender) >= ticketPrice, "Insufficient balance");
         require(token.transferFrom(msg.sender, address(this), ticketPrice), "Deposit failed");
 
         uint256 devFee = (getTicketPrice(bubbleId, token) * 2) / 100;
@@ -187,8 +197,8 @@ contract DegenBubble is Ownable {
             keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))
         ) % base;
 
-    return rand < adjustedChance;
-}
+        return rand < adjustedChance;
+    }
 
     function triggerPop(uint256 bubbleId, address user) internal {
         Bubble storage bubble = bubbles[bubbleId];
@@ -302,7 +312,7 @@ contract DegenBubble is Ownable {
     function manualPop(uint256 bubbleId) external {
         Bubble storage bubble = bubbles[bubbleId];
         require(bubble.bubbleCreator != address(0), "Invalid bubble ID");
-        require(block.timestamp >= bubble.lastDepositTime + 7 days, "Must wait 7 days since last deposit");
+        require(block.timestamp >= bubble.lastDepositTime + manualPopCooldown, "Must wait for cooldown");
         require(bubble.isActive, "Bubble already popped");
 
         bubble.isActive = false;
@@ -390,6 +400,10 @@ contract DegenBubble is Ownable {
 
     function setRequiredNFTCount(uint256 _count) external onlyOwner {
         requiredNFTCount = _count;
+    }
+
+    function setManualPopCooldown(uint256 _seconds) external onlyOwner {
+        manualPopCooldown = _seconds;
     }
 
     function adminDeposit(uint256 bubbleId, IERC20 token, uint256 amount) external {
