@@ -32,6 +32,10 @@ contract DegenBubble is Ownable {
     mapping(uint256 => mapping(IERC20 => uint256)) public popPools; // (bubbleId => token => amount)
     mapping(uint256 => mapping(address => uint256)) public depositPrices; // (bubbleId => token => amount)
 
+    // NEW: Commit-reveal mappings
+    mapping(address => bytes32) public pendingCommits;
+    mapping(address => uint256) public commitBlocks;
+
     event BubbleCreated(uint256 indexed bubbleId, address indexed creator, address[] acceptedTokens);
     event Deposited(uint256 indexed bubbleId, address indexed user, uint256 amount, address token);
     event Popped(uint256 indexed bubbleId, address indexed user, address[] tokens, uint256[] amounts);
@@ -39,7 +43,9 @@ contract DegenBubble is Ownable {
 );
     event ManualPop(uint256 indexed bubbleId, address indexed triggeredBy, uint256 refundAmount);
     event AdminDeposited(uint256 indexed bubbleId, address indexed user, uint256 amount, address token);
-
+    
+    // NEW: Commit-reveal events
+    event Committed(address indexed user, bytes32 commitHash);
 
     constructor() Ownable(msg.sender) {
         developerAddress = msg.sender;
@@ -150,7 +156,24 @@ contract DegenBubble is Ownable {
         return depositPrices[bubbleId][address(token)];
     }
 
-    function deposit(uint256 bubbleId, IERC20 token) external {
+    // NEW: Commit function
+    function commitDeposit(bytes32 commitHash) external {
+        pendingCommits[msg.sender] = commitHash;
+        commitBlocks[msg.sender] = block.number;
+        emit Committed(msg.sender, commitHash);
+    }
+
+    // MODIFIED: Deposit function now uses commit-reveal
+    function deposit(uint256 bubbleId, IERC20 token, uint256 nonce) external {
+        // Verify commit-reveal
+        bytes32 expectedHash = keccak256(abi.encodePacked(msg.sender, bubbleId, address(token), nonce));
+        require(pendingCommits[msg.sender] == expectedHash, "Invalid commit");
+        require(block.number > commitBlocks[msg.sender], "Must wait at least 1 block");
+        
+        // Clear commit data
+        delete pendingCommits[msg.sender];
+        delete commitBlocks[msg.sender];
+
         Bubble storage bubble = bubbles[bubbleId];
         uint256 ticketPrice = getTicketPrice(bubbleId, token);
         require(bubble.isActive, "Bubble has popped!");
@@ -165,7 +188,7 @@ contract DegenBubble is Ownable {
         require(token.transfer(developerAddress, devFee), "Developer fee transfer failed");
 
         bubble.depositCount++;
-        if (shouldPop(bubble)) {
+        if (shouldPopSecure(bubble, nonce)) {
             triggerPop(bubbleId, msg.sender);
         }
 
@@ -174,15 +197,8 @@ contract DegenBubble is Ownable {
         emit Deposited(bubbleId, msg.sender, ticketPrice, address(token));
     }
 
-    // function oldshouldPop(Bubble storage bubble) internal view returns (bool) {
-    //     uint256 adjustedPopProbability = bubble.popProbability - (bubble.popProbability * bubble.depositCount / 1000000);
-    //     if (adjustedPopProbability <= 2000000) {
-    //         adjustedPopProbability = 2000000;
-    //     }
-    //     return (uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % 10000000) < adjustedPopProbability;
-    // }
-
-    function shouldPop(Bubble storage bubble) internal view returns (bool) {
+    // NEW: Secure shouldPop function using commit-reveal randomness
+    function shouldPopSecure(Bubble storage bubble, uint256 nonce) internal view returns (bool) {
         uint256 base = 10_000_000; // 100%
         uint256 minChance = base / bubble.popProbability; // e.g., 10% = 1_000_000
         uint256 maxChance = 2_000_000; // 20%
@@ -192,9 +208,10 @@ contract DegenBubble is Ownable {
         // Cap at 20%
         if (adjustedChance > maxChance) adjustedChance = maxChance;
 
-        // Generate pseudo-random value and compare to chance
+        // SECURE: Use future block hash from commit time + user's secret
+        uint256 commitBlock = commitBlocks[msg.sender];
         uint256 rand = uint256(
-            keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))
+            keccak256(abi.encodePacked(blockhash(commitBlock + 1), nonce))
         ) % base;
 
         return rand < adjustedChance;
@@ -308,7 +325,6 @@ contract DegenBubble is Ownable {
         return (true, tokenAddress, popAmount, creatorReward);
     }
 
-
     function manualPop(uint256 bubbleId) external {
         Bubble storage bubble = bubbles[bubbleId];
         require(bubble.bubbleCreator != address(0), "Invalid bubble ID");
@@ -322,7 +338,6 @@ contract DegenBubble is Ownable {
         require(popPools[bubbleId][depositToken] >= refundAmount, "Insufficient balance for refund");
         require(depositToken.transfer(bubble.bubbleCreator, refundAmount), "Refund failed");
         popPools[bubbleId][depositToken] -= refundAmount;
-
 
         for (uint256 i = 0; i < bubble.acceptedTokens.length; i++) {
             IERC20 token = bubble.acceptedTokens[i];
@@ -378,25 +393,25 @@ contract DegenBubble is Ownable {
         uint256 len = b.acceptedTokens.length;
         uint256[] memory poolAmounts = new uint256[](len);
         for (uint256 i = 0; i < len; i++) {
-            poolAmounts[i] = popPools[bubbleId][b.acceptedTokens[i]]; // No casting needed
+            poolAmounts[i] = popPools[bubbleId][b.acceptedTokens[i]];
         }
         return poolAmounts;
     }
 
-    function setShameWallet(address _newShameWallet) external onlyOwner {
-        require(_newShameWallet != address(0), "Invalid address");
-        shameWallet = _newShameWallet;
-    }
+    // function setShameWallet(address _newShameWallet) external onlyOwner {
+    //     require(_newShameWallet != address(0), "Invalid address");
+    //     shameWallet = _newShameWallet;
+    // }
 
-    function setDeveloperWallet(address _newDeveloperWallet) external onlyOwner {
-        require(_newDeveloperWallet != address(0), "Invalid address");
-        developerAddress = _newDeveloperWallet;
-    }
+    // function setDeveloperWallet(address _newDeveloperWallet) external onlyOwner {
+    //     require(_newDeveloperWallet != address(0), "Invalid address");
+    //     developerAddress = _newDeveloperWallet;
+    // }
 
-    function setRequireNFTCollection(address _newNftAddress) external onlyOwner {
-        require(_newNftAddress != address(0), "Invalid address");
-        nftCollection = IERC721(_newNftAddress);
-    }
+    // function setRequireNFTCollection(address _newNftAddress) external onlyOwner {
+    //     require(_newNftAddress != address(0), "Invalid address");
+    //     nftCollection = IERC721(_newNftAddress);
+    // }
 
     function setRequiredNFTCount(uint256 _count) external onlyOwner {
         requiredNFTCount = _count;
@@ -419,10 +434,8 @@ contract DegenBubble is Ownable {
         emit AdminDeposited(bubbleId, msg.sender, amount, address(token));
     }
 
-    //in case a token rugs prevents "free" ticket purchases
     function adminRemoveAcceptedToken(uint256 bubbleId, IERC20 token) external onlyOwner {
         acceptedTokensMap[bubbleId][address(token)] = false;
         delete depositPrices[bubbleId][address(token)];
     }
-
 }
