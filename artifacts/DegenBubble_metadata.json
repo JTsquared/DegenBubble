@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.26+commit.8a97fa7a"
+		"version": "0.8.24+commit.e11b9ed9"
 	},
 	"language": "Solidity",
 	"output": {
@@ -844,11 +844,11 @@
 			]
 		},
 		"contracts/Bubble.sol": {
-			"keccak256": "0x4998a07908b51a0cc8a3b01ecf898369e7be12532989d7689a19afe6be35403c",
+			"keccak256": "0xf20d7e0b869e4afa019f88fd45107d62eca3dd6274877a920a1cb59f4b7702fa",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://d2b66720f9fca7855271dacabd976cc18f0ce70301b5469624ebc1b343b9186d",
-				"dweb:/ipfs/QmSvQ93vAAn29tSyUVnDumz9rv7RfEisuug72f264Vf7ER"
+				"bzz-raw://fd7c2871d0ada7ee80d514ae2e7adbc2e65a941d9ca7ea5bafc38cc502673062",
+				"dweb:/ipfs/QmNr98qRCPyezhuEKj5KvQHsEpJyfPrg3tReX4cJu6fLUG"
 			]
 		}
 	},

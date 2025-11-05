@@ -50,7 +50,7 @@ contract DegenBubble is Ownable {
     constructor() Ownable(msg.sender) {
         developerAddress = msg.sender;
         shameWallet = 0x548d1E25C33C7f2255471B350fFf96Bd23a775eb;
-        nftCollection = IERC721(0x5dbC5A50df2B7b61b5C67FecFe552D8984424315);
+        nftCollection = IERC721(0x5E870b3d315F7A8d7089E8B829eD8C3d9cef06eF);
     }
 
     function createBubble(
